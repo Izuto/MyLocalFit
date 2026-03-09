@@ -118,6 +118,9 @@ header {
     box-shadow: var(--glow);
 }
 
+.icon-svg { width: 20px; height: 20px; display: block; }
+.icon-btn.favorite { color: var(--accent-color); }
+
 /* == Main Content == */
 #main-content {
     padding: 20px;

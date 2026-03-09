@@ -25,26 +25,37 @@ const StorageUtils = {
 
     updateProgress(durationInSeconds) {
         const stats = this.getStats();
-        
+
         stats.completedWorkouts += 1;
         stats.totalTimeInSeconds += durationInSeconds;
 
-        const today = new Date().toDateString();
+        const today = new Date();
+        const todayStr = today.toDateString();
+
         if (stats.lastWorkoutDate) {
-            const lastDate = new Date(stats.lastWorkoutDate);
-            const diffTime = Math.abs(new Date() - lastDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            
-            if (diffDays === 1) {
+            // Compare calendar dates explicitly to avoid time-of-day issues.
+            const lastDateStr = new Date(stats.lastWorkoutDate).toDateString();
+
+            // Build yesterday's date string for exact previous-day comparison.
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+
+            if (lastDateStr === yesterdayStr) {
+                // Last workout was exactly yesterday -> increase streak
                 stats.streakCounter += 1;
-            } else if (diffDays > 1) {
-                stats.streakCounter = 0;
+            } else if (lastDateStr === todayStr) {
+                // Already recorded a workout today -> do not change streak
+            } else {
+                // Missed one or more days -> reset streak to 1 (today counts)
+                stats.streakCounter = 1;
             }
         } else {
+            // First recorded workout -> start streak at 1
             stats.streakCounter = 1;
         }
 
-        stats.lastWorkoutDate = today;
+        stats.lastWorkoutDate = todayStr;
         this.saveStats(stats);
     },
 
