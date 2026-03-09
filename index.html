@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITLOCAL - Offline Training</title>
+    <meta name="description" content="A local-first offline fitness training web application.">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="logo">FITLOCAL</div>
+            <div class="header-actions">
+                <button id="mute-toggle" class="icon-btn" aria-label="Toggle Sound">
+                    🔊
+                </button>
+                <button id="theme-toggle" class="icon-btn" aria-label="Toggle Theme">
+                    🌙
+                </button>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <!-- Dynamic content injected here -->
+            <div class="dashboard fadeIn">Loading...</div>
+        </main>
+        
+        <nav id="bottom-nav">
+            <button class="nav-btn active" data-target="dashboard">
+                <span class="icon">🏠</span>
+                <span class="label">Home</span>
+            </button>
+            <button class="nav-btn" data-target="library">
+                <span class="icon">📚</span>
+                <span class="label">Library</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    <script src="data/exercises.js"></script>
+    <script src="logic/storage.js"></script>
+    <script src="logic/timer.js"></script>
+    <script src="components/ui.js"></script>
+    <script src="logic/app.js"></script>
+</body>
+</html>
