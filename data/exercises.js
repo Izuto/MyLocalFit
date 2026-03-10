@@ -3,7 +3,7 @@ const exercisesDB = [
     {
         id: "ex_pushups",
         name: "Push-ups",
-        description: "A classic upper body exercise that targets the chest, shoulders, and triceps. Keep your back straight and lower until your chest nearly touches the floor.",
+        description: "Start in a high plank with hands under the shoulders. Bend your elbows to lower the chest toward the floor while keeping a straight spine; stop just before contact. Drive through the palms to press back up. Keep the core engaged and breathe steadily.",
         muscles: ["Chest", "Triceps", "Shoulders"],
         duration: 45
     },
@@ -61,14 +61,14 @@ const exercisesDB = [
     {
         id: "ex_squats",
         name: "Squats",
-        description: "A lower body exercise targeting the thighs, hips, and buttocks. Go as deep as comfortable, keeping your chest up.",
+        description: "Stand with feet hip-width apart, toes slightly turned out. Hinge at the hips and bend the knees to lower into a controlled squat, sending the hips back as if sitting into a chair; keep your chest up, spine neutral, and knees tracking over toes. Drive through the heels to return to standing. Breathe in while lowering, exhale when rising. Tempo: 2s down, 1s pause, 1s up. Modify by using a chair for box squats or perform shallow squats if mobility is limited.",
         muscles: ["Quads", "Glutes", "Hamstrings"],
         duration: 60
     },
     {
         id: "ex_lunges",
         name: "Lunges",
-        description: "Step forward into a lunge, lowering your back knee toward the floor. Alternate legs each rep.",
+        description: "Step forward with one foot and lower until the front thigh is roughly parallel to the floor and the back knee hovers above the ground. Keep your torso upright and the front knee tracking over the ankle. Push through the front heel to return; alternate legs each rep.",
         muscles: ["Quads", "Glutes", "Hamstrings"],
         duration: 60
     },
@@ -198,14 +198,14 @@ const exercisesDB = [
     {
         id: "ex_jumping_jacks",
         name: "Jumping Jacks",
-        description: "A full-body cardio exercise that gets your heart rate up. Keep a steady pace and land softly.",
+        description: "Stand tall with feet together and arms at your sides. Jump your feet out and raise your arms overhead, then return to the start position. Keep a soft bend in the knees and land quietly. Maintain a steady rhythm and breathe evenly. Tempo: steady cardio. Modify by stepping side-to-side for a low-impact version.",
         muscles: ["Full Body", "Cardio"],
         duration: 45
     },
     {
         id: "ex_burpees",
         name: "Burpees",
-        description: "Drop to a push-up, jump your feet to your hands, then explode upward. The ultimate full-body cardio move.",
+        description: "From standing, drop into a squat and place your hands on the floor. Kick your feet back into a plank, perform an optional push-up, jump your feet forward toward your hands, then explosively jump up. Move smoothly and land softly; scale by removing the jump or the push-up.",
         muscles: ["Full Body", "Cardio"],
         duration: 40
     },
@@ -218,7 +218,7 @@ const exercisesDB = [
     },
     {
         id: "ex_butt_kicks",
-        name: "Butt Kicks",
+        description: "Hold a high or forearm plank, keeping a straight line from head to heels. Squeeze the glutes and brace the abs to prevent sagging. Breathe steadily and avoid holding your breath.",
         description: "Run in place, kicking your heels up toward your glutes with each stride. Great hamstring warm-up and cardio.",
         muscles: ["Cardio", "Hamstrings"],
         duration: 40

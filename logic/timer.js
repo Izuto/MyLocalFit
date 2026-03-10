@@ -55,4 +55,17 @@ class ExerciseTimer {
             this.timerId = null;
         }
     }
+
+    // Reset the timer to the original duration. If `startNow` is true (default)
+    // the timer will begin running immediately; otherwise it will remain paused.
+    reset(startNow = true) {
+        // stop any running loop
+        this.stop();
+        this.remaining = this.duration;
+        // inform UI immediately
+        if (typeof this.onTick === 'function') this.onTick(this.remaining);
+        this.expected = performance.now() + 1000;
+        this.isPaused = !startNow;
+        if (startNow) this.start();
+    }
 }

@@ -131,6 +131,28 @@ class App {
                 this.pauseWorkout();
             } else if (btn.id === 'btn-resume') {
                 this.resumeWorkout();
+            } else if (btn.id === 'btn-redo') {
+                // Reset the current exercise to its full duration and restart the timer
+                const exId = this.workoutState.routine.exercises[this.workoutState.currentIndex];
+                const exercise = this.getMergedExercises().find(e => e.id === exId);
+                if (!exercise) return;
+
+                // Reset state
+                this.workoutState.remaining = exercise.duration;
+
+                if (this.activeTimer && typeof this.activeTimer.reset === 'function') {
+                    // If currently paused, reset but keep paused
+                    const keepPaused = !!this.workoutState.isPaused;
+                    this.activeTimer.reset(!keepPaused);
+                    if (keepPaused) this.activeTimer.pause();
+                } else {
+                    // Fallback: stop and reload exercise
+                    if (this.activeTimer) this.activeTimer.stop();
+                    this.loadExercise();
+                }
+
+                // Update UI immediately
+                this.updateWorkoutUI();
             } else if (btn.id === 'btn-skip') {
                 this.nextExercise();
             } else if (btn.id === 'btn-quit') {

@@ -195,13 +195,14 @@ const UI = {
                     ${isPaused ? '<div class="paused-indicator pulse">WORKOUT PAUSED</div>' : '<div style="height:44px;"></div>'}
                 </div>
 
-                <div class="controls mt-2">
+                    <div class="controls mt-2">
                     <div style="display:flex; gap:12px; margin-bottom:12px;">
                         ${isPaused 
                             ? `<button id="btn-resume" class="btn btn-primary lg" style="flex:1;"><span class="icon">▶️</span> Resume</button>`
                             : `<button id="btn-pause" class="btn btn-secondary lg" style="flex:1;"><span class="icon">⏸️</span> Pause</button>`
                         }
                         <button id="btn-skip" class="btn btn-outline lg" style="flex:1;" aria-label="Skip Exercise">⏭️ Skip</button>
+                        ${!isPaused ? `<button id="btn-redo" class="btn btn-outline lg" style="flex:1;" aria-label="Redo Exercise">🔁 Reset</button>` : ''}
                     </div>
                     
                     ${isPaused ? `
