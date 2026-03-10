@@ -1,7 +1,7 @@
 const StorageUtils = {
     keys: {
-        STATS: 'fitlocal_stats',
-        THEME: 'fitlocal_theme'
+        STATS: 'mylocalfit_stats',
+        THEME: 'mylocalfit_theme'
     },
     
     getStats() {
@@ -68,16 +68,16 @@ const StorageUtils = {
     },
 
     getMuted() {
-        return localStorage.getItem('fitlocal_muted') === 'true';
+        return localStorage.getItem('mylocalfit_muted') === 'true';
     },
 
     setMuted(val) {
-        localStorage.setItem('fitlocal_muted', val ? 'true' : 'false');
+        localStorage.setItem('mylocalfit_muted', val ? 'true' : 'false');
     },
 
     getCustomRoutines() {
         try {
-            const raw = localStorage.getItem('fitlocal_custom_routines');
+            const raw = localStorage.getItem('mylocalfit_custom_routines');
             return raw ? JSON.parse(raw) : [];
         } catch(e) { return []; }
     },
@@ -85,11 +85,43 @@ const StorageUtils = {
     saveCustomRoutine(routine) {
         const routines = this.getCustomRoutines();
         routines.push(routine);
-        localStorage.setItem('fitlocal_custom_routines', JSON.stringify(routines));
+        localStorage.setItem('mylocalfit_custom_routines', JSON.stringify(routines));
+    },
+
+    // Upsert a custom routine (create or update)
+    saveOrUpdateCustomRoutine(routine) {
+        const routines = this.getCustomRoutines();
+        const idx = routines.findIndex(r => r.id === routine.id);
+        if (idx >= 0) {
+            routines[idx] = routine;
+        } else {
+            routines.push(routine);
+        }
+        localStorage.setItem('mylocalfit_custom_routines', JSON.stringify(routines));
     },
 
     deleteCustomRoutine(id) {
         const routines = this.getCustomRoutines().filter(r => r.id !== id);
-        localStorage.setItem('fitlocal_custom_routines', JSON.stringify(routines));
+        localStorage.setItem('mylocalfit_custom_routines', JSON.stringify(routines));
+    },
+
+    // Custom exercises (overrides / user-edits)
+    getCustomExercises() {
+        try {
+            const raw = localStorage.getItem('mylocalfit_custom_exercises');
+            return raw ? JSON.parse(raw) : [];
+        } catch(e) { return []; }
+    },
+
+    saveOrUpdateCustomExercise(exercise) {
+        const arr = this.getCustomExercises();
+        const idx = arr.findIndex(e => e.id === exercise.id);
+        if (idx >= 0) arr[idx] = exercise; else arr.push(exercise);
+        localStorage.setItem('mylocalfit_custom_exercises', JSON.stringify(arr));
+    },
+
+    deleteCustomExercise(id) {
+        const arr = this.getCustomExercises().filter(e => e.id !== id);
+        localStorage.setItem('mylocalfit_custom_exercises', JSON.stringify(arr));
     }
 };
