@@ -1,5 +1,5 @@
 /* ============================================
-   FITLOCAL — Premium Fitness Training App CSS
+    mylocalfit — Premium Fitness Training App CSS
    ============================================ */
 
 /* == Google Font == */
@@ -475,25 +475,26 @@ header {
 .exercise-display { margin-bottom: 16px; }
 
 .ex-title {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 800;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
 }
 .ex-muscles {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--secondary-color);
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 /* == Timer Circle == */
 .timer-circle {
     position: relative;
-    width: 200px;
-    height: 200px;
-    margin: 0 auto 16px;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 18px;
 }
 
 .timer-svg {
@@ -522,10 +523,11 @@ header {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 3.5rem;
-    font-weight: 800;
+    font-size: 4rem;
+    font-weight: 900;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
+    text-shadow: 0 6px 18px rgba(0,0,0,0.35);
 }
 
 .timer-circle.paused .timer-text {
@@ -557,10 +559,10 @@ header {
 
 /* == Controls == */
 .controls {
-    max-width: 380px;
+    max-width: 420px;
     margin: 0 auto;
 }
-.controls .icon { font-size: 1.1rem; }
+.controls .icon { font-size: 1.2rem; }
 
 /* == Exercise Description in Workout == */
 .ex-description {
@@ -571,9 +573,15 @@ header {
     text-align: left;
 }
 .ex-description p {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
     line-height: 1.6;
+}
+
+.sequence-indicator {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 700;
 }
 
 /* == Workout Complete == */
@@ -615,9 +623,9 @@ header {
 @media (max-width: 400px) {
     .stats-grid { grid-template-columns: 1fr; gap: 10px; }
     .stat-card { flex-direction: row; justify-content: space-between; align-items: center; padding: 14px 18px; }
-    .timer-circle { width: 170px; height: 170px; }
-    .timer-text { font-size: 2.8rem; }
-    .ex-title { font-size: 1.4rem; }
+    .timer-circle { width: 190px; height: 190px; }
+    .timer-text { font-size: 3.2rem; }
+    .ex-title { font-size: 1.6rem; }
 }
 
 /* == Scrollbar == */
