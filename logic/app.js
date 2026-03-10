@@ -9,6 +9,7 @@ class App {
         this.currentView = 'dashboard';
         this.activeTimer = null;
         this.selectedExercises = [];
+        this.editingRoutineId = null; // when editing an existing custom routine
         this.workoutState = {
             routine: null,
             currentIndex: 0,
@@ -21,6 +22,23 @@ class App {
         this.initMute();
         this.bindEvents();
         this.renderView('dashboard');
+
+        // Position bottom nav to align with #app container
+        this.positionBottomNav();
+        window.addEventListener('resize', () => this.positionBottomNav());
+    }
+
+    // Align the fixed bottom nav to the centered #app container
+    positionBottomNav() {
+        const appEl = document.getElementById('app');
+        const nav = document.getElementById('bottom-nav');
+        if (!appEl || !nav) return;
+        const rect = appEl.getBoundingClientRect();
+        // Place nav's left at container left and match its width
+        nav.style.left = rect.left + 'px';
+        nav.style.width = rect.width + 'px';
+        // Remove transform centering (we set exact left)
+        nav.style.transform = 'none';
     }
 
     initTheme() {
@@ -86,6 +104,18 @@ class App {
                 this.selectedExercises.push(exId);
                 this.updateSelectedUI();
                 this.updateSaveButton();
+            } else if (btn.classList.contains('btn-edit-ex')) {
+                const exId = btn.getAttribute('data-ex-id');
+                this.openEditExerciseModal(exId);
+            } else if (btn.id === 'btn-open-add-ex') {
+                this.openAddExerciseModal();
+            } else if (btn.id === 'btn-save-ex') {
+                this.saveExerciseEdits();
+            } else if (btn.id === 'btn-cancel-ex') {
+                this.closeEditExerciseModal();
+            } else if (btn.classList.contains('btn-edit-routine')) {
+                const rid = btn.getAttribute('data-routine-id');
+                this.openEditRoutine(rid);
             } else if (btn.classList.contains('btn-remove-selected')) {
                 const rmIdx = parseInt(btn.getAttribute('data-idx'));
                 this.selectedExercises.splice(rmIdx, 1);
@@ -114,6 +144,22 @@ class App {
         });
     }
 
+    // Open modal for creating a new exercise (re-uses edit modal)
+    openAddExerciseModal() {
+        const modal = document.getElementById('edit-ex-modal');
+        if (!modal) return;
+        document.getElementById('edit-ex-id').value = '';
+        document.getElementById('edit-ex-name').value = '';
+        document.getElementById('edit-ex-duration').value = 30;
+        document.getElementById('edit-ex-muscles').value = '';
+        document.getElementById('edit-ex-desc').value = '';
+        modal.style.display = 'block';
+        setTimeout(() => {
+            const nameEl = document.getElementById('edit-ex-name');
+            if (nameEl) { nameEl.focus(); }
+        }, 40);
+    }
+
     renderView(view) {
         this.currentView = view;
         const nav = document.getElementById('bottom-nav');
@@ -127,11 +173,26 @@ class App {
             this.mainContent.innerHTML = UI.getDashboardHTML(stats, this.getAllRoutines());
         } else if (view === 'library') {
             this.selectedExercises = [];
+            this.editingRoutineId = null;
             const customRoutines = StorageUtils.getCustomRoutines();
-            this.mainContent.innerHTML = UI.getLibraryHTML(exercisesDB, customRoutines);
+            const exercises = this.getMergedExercises();
+            this.mainContent.innerHTML = UI.getLibraryHTML(exercises, customRoutines);
         } else if (view === 'workout_complete') {
             this.mainContent.innerHTML = UI.getWorkoutCompleteHTML();
         }
+    }
+
+    // Return merged exercises: base exercisesDB with any custom overrides from storage
+    getMergedExercises() {
+        const base = exercisesDB.map(e => ({...e}));
+        const custom = StorageUtils.getCustomExercises();
+        const map = new Map();
+        base.forEach(e => map.set(e.id, e));
+        custom.forEach(e => {
+            const existing = map.get(e.id) || {};
+            map.set(e.id, {...existing, ...e});
+        });
+        return Array.from(map.values());
     }
 
     startWorkout(routine) {
@@ -151,7 +212,7 @@ class App {
 
     loadExercise() {
         const exId = this.workoutState.routine.exercises[this.workoutState.currentIndex];
-        const exercise = exercisesDB.find(e => e.id === exId);
+        const exercise = this.getMergedExercises().find(e => e.id === exId);
         
         if (!exercise) {
             this.finishWorkout();
@@ -191,7 +252,7 @@ class App {
 
     updateWorkoutUI() {
         const exId = this.workoutState.routine.exercises[this.workoutState.currentIndex];
-        const exercise = exercisesDB.find(e => e.id === exId);
+        const exercise = this.getMergedExercises().find(e => e.id === exId);
         const totalEx = this.workoutState.routine.exercises.length;
         
         this.mainContent.innerHTML = UI.getWorkoutSessionHTML(
@@ -269,7 +330,7 @@ class App {
         const secs = dur % 60;
         let html = `<p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:6px;">${this.selectedExercises.length} exercises • ${mins}m ${secs}s</p>`;
         this.selectedExercises.forEach((id, i) => {
-            const ex = exercisesDB.find(e => e.id === id);
+            const ex = this.getMergedExercises().find(e => e.id === id);
             if (!ex) return;
             html += `<div class="selected-tag">
                 <span>${ex.name} (${ex.duration}s)</span>
@@ -287,15 +348,82 @@ class App {
     saveCustomRoutine() {
         const nameInput = document.getElementById('custom-routine-name');
         const name = (nameInput && nameInput.value.trim()) || 'My Routine';
-        const routine = {
+        let routine = {
             id: 'custom_' + Date.now(),
             name: name,
             category: 'Custom',
             exercises: [...this.selectedExercises]
         };
-        StorageUtils.saveCustomRoutine(routine);
+        if (this.editingRoutineId) {
+            // preserve original id when editing
+            routine.id = this.editingRoutineId;
+            StorageUtils.saveOrUpdateCustomRoutine(routine);
+        } else {
+            StorageUtils.saveCustomRoutine(routine);
+        }
         this.selectedExercises = [];
         this.renderView('library');
+    }
+
+    // Opens the exercise edit modal and populates fields
+    openEditExerciseModal(exId) {
+        const exercises = this.getMergedExercises();
+        const ex = exercises.find(e => e.id === exId);
+        if (!ex) return;
+        const modal = document.getElementById('edit-ex-modal');
+        if (!modal) return;
+        document.getElementById('edit-ex-id').value = ex.id;
+        document.getElementById('edit-ex-name').value = ex.name || '';
+        document.getElementById('edit-ex-duration').value = ex.duration || 30;
+        document.getElementById('edit-ex-muscles').value = (ex.muscles || []).join(', ');
+        document.getElementById('edit-ex-desc').value = ex.description || '';
+        modal.style.display = 'block';
+        setTimeout(() => {
+            const nameEl = document.getElementById('edit-ex-name');
+            const durEl = document.getElementById('edit-ex-duration');
+            if (nameEl) { nameEl.focus(); nameEl.select(); }
+            if (durEl) durEl.focus();
+        }, 40);
+    }
+
+    closeEditExerciseModal() {
+        const modal = document.getElementById('edit-ex-modal');
+        if (!modal) return;
+        modal.style.display = 'none';
+    }
+
+    // Save edits to an exercise (stored as custom override)
+    saveExerciseEdits() {
+        let id = document.getElementById('edit-ex-id').value;
+        if (!id) {
+            id = 'custom_ex_' + Date.now();
+        }
+        const name = document.getElementById('edit-ex-name').value.trim();
+        const duration = parseInt(document.getElementById('edit-ex-duration').value, 10) || 30;
+        const muscles = document.getElementById('edit-ex-muscles').value.split(',').map(s => s.trim()).filter(Boolean);
+        const description = document.getElementById('edit-ex-desc').value.trim();
+
+        const updated = { id, name, duration, muscles, description };
+        StorageUtils.saveOrUpdateCustomExercise(updated);
+        this.closeEditExerciseModal();
+        this.renderView('library');
+    }
+
+    // Load a custom routine into the builder for editing
+    openEditRoutine(routineId) {
+        const routines = StorageUtils.getCustomRoutines();
+        const r = routines.find(x => x.id === routineId);
+        if (!r) return;
+        this.selectedExercises = [...r.exercises];
+        this.editingRoutineId = r.id;
+        // render library and populate builder fields after DOM updates
+        this.renderView('library');
+        setTimeout(() => {
+            const nameInput = document.getElementById('custom-routine-name');
+            if (nameInput) nameInput.value = r.name;
+            this.updateSelectedUI();
+            this.updateSaveButton();
+        }, 40);
     }
 
     // Sharp double-beep — plays at halftime
