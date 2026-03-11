@@ -18,6 +18,12 @@ class App {
             remaining: 0
         };
 
+        // PWA install prompt
+        this.deferredPrompt = null;
+        this.installBanner = null;
+        this.installBtn = null;
+        this.dismissInstallBtn = null;
+
         this.initTheme();
         this.initMute();
         this.bindEvents();
@@ -26,6 +32,37 @@ class App {
         // Position bottom nav to align with #app container
         this.positionBottomNav();
         window.addEventListener('resize', () => this.positionBottomNav());
+
+        // Setup install banner elements (script is loaded at end of body so elements exist)
+        this.installBanner = document.getElementById('install-banner');
+        this.installBtn = document.getElementById('btn-install');
+        this.dismissInstallBtn = document.getElementById('btn-dismiss-install');
+        if (this.installBtn) this.installBtn.addEventListener('click', async () => {
+            if (!this.deferredPrompt) return;
+            this.deferredPrompt.prompt();
+            try { await this.deferredPrompt.userChoice; } catch (e) {}
+            this.deferredPrompt = null;
+            this.hideInstallBanner();
+        });
+        if (this.dismissInstallBtn) this.dismissInstallBtn.addEventListener('click', () => this.hideInstallBanner());
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredPrompt = e;
+            this.showInstallBanner();
+        });
+    }
+
+    showInstallBanner() {
+        if (!this.installBanner) return;
+        this.installBanner.classList.remove('hidden');
+        this.installBanner.setAttribute('aria-hidden', 'false');
+    }
+
+    hideInstallBanner() {
+        if (!this.installBanner) return;
+        this.installBanner.classList.add('hidden');
+        this.installBanner.setAttribute('aria-hidden', 'true');
     }
 
     // Align the fixed bottom nav to the centered #app container
@@ -115,7 +152,38 @@ class App {
                 this.closeEditExerciseModal();
             } else if (btn.classList.contains('btn-edit-routine')) {
                 const rid = btn.getAttribute('data-routine-id');
-                this.openEditRoutine(rid);
+                this.openInlineEditRoutine(rid);
+            } else if (btn.classList.contains('btn-inline-add')) {
+                const rid = btn.getAttribute('data-routine-id');
+                const sel = document.getElementById(`inline-add-ex-${rid}`);
+                const exId = sel && sel.value;
+                if (!exId) return;
+                const container = document.getElementById(`inline-selected-${rid}`);
+                const ex = this.getMergedExercises().find(e => e.id === exId);
+                if (!container || !ex) return;
+                const div = document.createElement('div');
+                div.className = 'inline-selected-item';
+                div.innerHTML = `<span>${ex.name} (${ex.duration}s)</span><button type="button" class="btn-inline-remove" data-routine-id="${rid}" data-ex-id="${exId}" style="margin-left:8px;">✕</button>`;
+                container.appendChild(div);
+            } else if (btn.classList.contains('btn-inline-remove')) {
+                const node = btn.closest('.inline-selected-item');
+                if (node) node.remove();
+            } else if (btn.classList.contains('btn-inline-save')) {
+                const rid = btn.getAttribute('data-routine-id');
+                const nameInput = document.getElementById(`inline-routine-name-${rid}`);
+                const name = nameInput ? nameInput.value.trim() : 'My Routine';
+                const items = Array.from(document.querySelectorAll(`#inline-selected-${rid} .inline-selected-item`));
+                const exIds = items.map(it => {
+                    const b = it.querySelector('.btn-inline-remove');
+                    return b ? b.getAttribute('data-ex-id') : null;
+                }).filter(Boolean);
+                const routine = { id: rid, name, category: 'Custom', exercises: exIds };
+                StorageUtils.saveOrUpdateCustomRoutine(routine);
+                this.renderView('library');
+            } else if (btn.classList.contains('btn-inline-cancel')) {
+                const rid = btn.getAttribute('data-routine-id');
+                const el = document.getElementById(`inline-edit-${rid}`);
+                if (el) el.style.display = 'none';
             } else if (btn.classList.contains('btn-remove-selected')) {
                 const rmIdx = parseInt(btn.getAttribute('data-idx'));
                 this.selectedExercises.splice(rmIdx, 1);
@@ -407,7 +475,7 @@ class App {
             if (durEl) durEl.focus();
         }, 40);
     }
-
+    
     closeEditExerciseModal() {
         const modal = document.getElementById('edit-ex-modal');
         if (!modal) return;
@@ -446,6 +514,32 @@ class App {
             this.updateSelectedUI();
             this.updateSaveButton();
         }, 40);
+    }
+
+    // Open inline editor for a saved routine (shows small form under the routine card)
+    openInlineEditRoutine(routineId) {
+        const routines = StorageUtils.getCustomRoutines();
+        const r = routines.find(x => x.id === routineId);
+        if (!r) return;
+        const el = document.getElementById(`inline-edit-${routineId}`);
+        if (!el) return;
+        el.style.display = 'block';
+        const nameInput = document.getElementById(`inline-routine-name-${routineId}`);
+        if (nameInput) nameInput.value = r.name;
+        const container = document.getElementById(`inline-selected-${routineId}`);
+        if (container) {
+            container.innerHTML = '';
+            const merged = this.getMergedExercises();
+            r.exercises.forEach(exId => {
+                const ex = merged.find(e => e.id === exId);
+                if (!ex) return;
+                const div = document.createElement('div');
+                div.className = 'inline-selected-item';
+                div.innerHTML = `<span>${ex.name} (${ex.duration}s)</span><button type="button" class="btn-inline-remove" data-routine-id="${routineId}" data-ex-id="${exId}" style="margin-left:8px;">✕</button>`;
+                container.appendChild(div);
+            });
+        }
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     // Sharp double-beep — plays at halftime
@@ -527,3 +621,12 @@ class App {
 document.addEventListener('DOMContentLoaded', () => {
     window.fitApp = new App();
 });
+
+// Register service worker for PWA offline support
+    if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('Service Worker registered'))
+            .catch(err => console.error('Service Worker registration failed:', err));
+    });
+}

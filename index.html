@@ -6,7 +6,16 @@
     <title>mylocalfit - Offline Training</title>
     <meta name="description" content="A local-first offline fitness training web application.">
     <link rel="icon" href="assets/icons/heart.svg" type="image/svg+xml">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff6b6b">
+    <link rel="apple-touch-icon" href="assets/icons/heart.svg">
     <link rel="stylesheet" href="styles/main.css">
+        <style>
+            .install-banner{position:fixed;left:12px;right:12px;bottom:18px;background:rgba(0,0,0,0.75);color:#fff;padding:10px 12px;border-radius:10px;display:flex;gap:8px;align-items:center;justify-content:space-between;z-index:9999}
+            .install-banner button{background:#fff;color:#000;border:none;padding:8px 10px;border-radius:6px}
+            .install-banner .label{font-size:14px}
+            .install-banner.hidden{display:none}
+        </style>
 </head>
 <body>
     <div id="app">
@@ -20,7 +29,7 @@
                     🌙
                 </button>
                 <button id="favorite-toggle" class="icon-btn favorite" aria-label="Favorite">
-                    <img src="assets/icons/heart.svg" alt="" class="icon-svg">
+                    <img src="assets/icons/icon-192-192.png" alt="" class="icon-svg">
                 </button>
             </div>
         </header>
@@ -48,5 +57,12 @@
     <script src="logic/timer.js"></script>
     <script src="components/ui.js"></script>
     <script src="logic/app.js"></script>
+        <div id="install-banner" class="install-banner hidden" aria-hidden="true">
+            <div class="label">Install MyLocalFit to your device</div>
+            <div>
+                <button id="btn-install">Install</button>
+                <button id="btn-dismiss-install">Dismiss</button>
+            </div>
+        </div>
 </body>
 </html>

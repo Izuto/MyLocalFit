@@ -7,16 +7,18 @@ const UI = {
         routines.forEach((r, i) => {
             const dur = calcRoutineDuration(r.exercises);
             const mins = Math.floor(dur / 60);
-            routineCards += `
-                <div class="routine-card hover-scale" style="margin-bottom:12px;">
-                    <div class="routine-header">
-                        <h3>${r.name}</h3>
-                        <span class="routine-badge">${r.category}</span>
+                const isCustom = !(typeof workoutRoutines !== 'undefined' && workoutRoutines.some(w => w.id === r.id));
+                const displayName = isCustom ? `🛠️ ${r.name}` : r.name;
+                routineCards += `
+                    <div class="routine-card hover-scale" style="margin-bottom:12px;">
+                        <div class="routine-header">
+                            <h3>${displayName}</h3>
+                            <span class="routine-badge">${r.category}</span>
+                        </div>
+                        <p>${r.exercises.length} Exercises • ~${mins} min</p>
+                        <button type="button" class="btn btn-primary lg w-100 mt-2 start-routine-btn" data-routine-index="${i}">Start Session</button>
                     </div>
-                    <p>${r.exercises.length} Exercises • ~${mins} min</p>
-                    <button class="btn btn-primary lg w-100 mt-2 start-routine-btn" data-routine-index="${i}">Start Session</button>
-                </div>
-            `;
+                `;
         });
 
         return `
@@ -78,15 +80,33 @@ const UI = {
                 const dur = calcRoutineDuration(r.exercises);
                 const mins = Math.floor(dur / 60);
                 savedHtml += `
-                    <div class="routine-card" style="margin-bottom:10px;">
+                    <div class="routine-card" data-routine-id="${r.id}" style="margin-bottom:10px;">
                         <div class="routine-header">
                             <h3>🛠️ ${r.name}</h3>
                             <div style="display:flex; gap:8px; align-items:center;">
-                                <button class="btn btn-secondary btn-edit-routine" data-routine-id="${r.id}" aria-label="Edit ${r.name}" style="font-size:0.9rem; padding:6px 10px;">✏️ Edit</button>
-                                <button class="btn btn-danger" data-routine-id="${r.id}" aria-label="Delete ${r.name}" style="font-size:0.9rem; padding:6px 10px;">🗑️ Delete</button>
+                                <button type="button" class="btn btn-secondary btn-edit-routine" data-routine-id="${r.id}" aria-label="Edit ${r.name}" style="font-size:0.9rem; padding:6px 10px;">✏️ Edit</button>
+                                <button type="button" class="btn btn-danger btn-delete-routine" data-routine-id="${r.id}" aria-label="Delete ${r.name}" style="font-size:0.9rem; padding:6px 10px;">🗑️ Delete</button>
                             </div>
                         </div>
                         <p>${r.exercises.length} Exercises • ~${mins} min</p>
+                    </div>
+                    <div id="inline-edit-${r.id}" class="inline-edit" style="display:none; margin-bottom:12px;">
+                        <div class="routine-card">
+                            <label style="font-weight:600;">Routine name</label>
+                            <input type="text" id="inline-routine-name-${r.id}" class="input-field" maxlength="40" style="margin-bottom:8px;" />
+                            <label style="font-weight:600;">Exercises</label>
+                            <div id="inline-selected-${r.id}" style="margin:6px 0 8px 0;"></div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <select id="inline-add-ex-${r.id}" class="input-field" style="flex:1;">
+                                    ${exercises.map(ex => `<option value="${ex.id}">${ex.name} (${ex.duration}s)</option>`).join('')}
+                                </select>
+                                <button type="button" class="btn btn-secondary btn-inline-add" data-routine-id="${r.id}">Add</button>
+                            </div>
+                            <div style="display:flex; gap:8px; margin-top:10px;">
+                                <button type="button" class="btn btn-primary btn-inline-save" data-routine-id="${r.id}">Save</button>
+                                <button type="button" class="btn btn-outline btn-inline-cancel" data-routine-id="${r.id}">Cancel</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             });

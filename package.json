@@ -1,0 +1,11 @@
+{
+  "name": "mylocalfit",
+  "version": "0.1.1",
+  "description": "Fitness PWA - helper scripts",
+  "scripts": {
+    "export-icons": "node ./scripts/export-icons.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.32.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "MyLocalFit",
+  "short_name": "MyFit",
+  "start_url": "./",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6b6b",
+  "description": "A local-first offline fitness training web application.",
+  "icons": [
+    {
+      "src": "assets/icons/heart.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
